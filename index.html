@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Happy Liquors — Karaikal | Premium Spirits, Bar &amp; Kitchen</title>
+<meta name="description" content="Happy Liquors, Karaikal — 490+ labels of premium spirits, a full bar and a kitchen that knows what to pour. Shop, sip & dine. 18+ only. Drink responsibly.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;0,700;0,800;1,500;1,600&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<link rel="icon" href="logo.jpg">
+<script src="vendor/three.min.js"></script>
+<script src="vendor/gsap.min.js"></script>
+<script src="vendor/ScrollTrigger.min.js"></script>
+</head>
+<body>
+
+<!-- ══════════ AGE GATE ══════════ -->
+<div id="ageGate" class="age-gate" role="dialog" aria-modal="true" aria-label="Age verification">
+  <div class="age-card" data-reveal>
+    <img src="logo.jpg" alt="Happy Liquors" class="age-logo">
+    <p class="kicker">Please confirm to enter</p>
+    <h2>Are you 18 or older?</h2>
+    <p class="age-sub">The legal drinking age in India is 18+. You must confirm your age to step inside the Vault.</p>
+    <div class="age-actions">
+      <button id="ageYes" class="btn btn-gold">I am 18+ — Enter</button>
+      <a class="btn btn-ghost" href="https://www.google.com">Exit</a>
+    </div>
+    <p class="age-note">Drink responsibly. Never drink and drive.</p>
+  </div>
+</div>
+
+<!-- ══════════ NAV ══════════ -->
+<header id="nav" class="nav">
+  <a href="#hero" class="nav-brand"><img src="logo.jpg" alt="Happy Liquors"></a>
+  <nav class="nav-links">
+    <a href="#collection">Collection</a>
+    <a href="#bar-kitchen">Bar &amp; Kitchen</a>
+    <a href="#journal">Journal</a>
+    <a href="#faq">FAQ</a>
+    <a href="#visit" class="nav-cta">Visit Us</a>
+  </nav>
+  <button id="navToggle" class="nav-toggle" aria-label="Menu"><span></span><span></span><span></span></button>
+</header>
+<div id="mobileMenu" class="mobile-menu">
+  <a href="#collection">Collection</a>
+  <a href="#bar-kitchen">Bar &amp; Kitchen</a>
+  <a href="#journal">Journal</a>
+  <a href="#faq">FAQ</a>
+  <a href="#visit">Visit Us</a>
+</div>
+
+<!-- ══════════ HERO ══════════ -->
+<section id="hero" class="hero">
+  <canvas id="gl"></canvas>
+  <div class="hero-shade"></div>
+  <div class="hero-inner">
+    <p class="kicker hero-kicker">Karaikal &middot; Premium Spirits &middot; Bar &amp; Kitchen</p>
+    <h1 class="hero-title">Step Inside<br><span class="gold-text">the Vault</span></h1>
+    <p class="hero-sub">490+ labels of the world's finest whisky, brandy, beer, wine &amp; more — plus a bar and a kitchen that know exactly what to pour with your plate.</p>
+    <div class="hero-actions">
+      <a href="#collection" class="btn btn-gold">Explore the Collection</a>
+      <a href="#visit" class="btn btn-ghost">Find Us</a>
+    </div>
+  </div>
+  <a href="#collection" class="scroll-hint" aria-label="Scroll down"><span></span></a>
+</section>
+
+<!-- ══════════ MARQUEE ══════════ -->
+<div class="marquee" aria-hidden="true">
+  <div class="marquee-track">
+    <span>Single Malts</span><i>&#10022;</i><span>Craft Beer</span><i>&#10022;</i><span>Fine Wine</span><i>&#10022;</i><span>Premium Vodka</span><i>&#10022;</i><span>Tequila</span><i>&#10022;</i><span>Bar &amp; Kitchen</span><i>&#10022;</i>
+    <span>Single Malts</span><i>&#10022;</i><span>Craft Beer</span><i>&#10022;</i><span>Fine Wine</span><i>&#10022;</i><span>Premium Vodka</span><i>&#10022;</i><span>Tequila</span><i>&#10022;</i><span>Bar &amp; Kitchen</span><i>&#10022;</i>
+  </div>
+</div>
+
+<!-- ══════════ STATS ══════════ -->
+<section class="stats">
+  <div class="stat" data-reveal><span class="stat-num" data-count="490" data-suffix="+">0</span><span class="stat-label">Labels on our shelves</span></div>
+  <div class="stat" data-reveal><span class="stat-num" data-count="10">0</span><span class="stat-label">Spirit categories</span></div>
+  <div class="stat" data-reveal><span class="stat-num" data-count="3">0</span><span class="stat-label">Store, bar &amp; kitchen — one roof</span></div>
+</section>
+
+<!-- ══════════ COLLECTION ══════════ -->
+<section id="collection" class="section collection">
+  <div class="wrap">
+    <p class="kicker" data-reveal>The shelves</p>
+    <h2 data-reveal>The <span class="gold-text">Collection</span></h2>
+    <p class="section-sub" data-reveal>Every bottle we stock, from everyday pours to rare single malts. Search the vault or browse by spirit.</p>
+    <div class="collection-tools" data-reveal>
+      <div id="catTabs" class="cat-tabs"></div>
+      <input id="stockSearch" class="stock-search" type="search" placeholder="Search a brand — try &quot;single malt&quot;…" aria-label="Search brands">
+    </div>
+    <p id="stockCount" class="stock-count"></p>
+    <div id="stockGrid" class="stock-grid"></div>
+    <div class="center"><button id="showMore" class="btn btn-ghost">Show more</button></div>
+    <p class="fineprint">Prices and availability at the store — our shelves are refreshed with the season.</p>
+  </div>
+</section>
+
+<div class="divider" aria-hidden="true"><span></span><i>&#10022;</i><span></span></div>
+
+<!-- ══════════ BAR & KITCHEN ══════════ -->
+<section id="bar-kitchen" class="section bar-kitchen">
+  <div class="wrap">
+    <p class="kicker" data-reveal>More than a store</p>
+    <h2 data-reveal>Sip <span class="gold-text">&amp;</span> Savour</h2>
+    <p class="section-sub" data-reveal>Happy Liquors isn't just a shop — it's a bar and a restaurant. Pull up a chair, and let our pairings do the talking.</p>
+    <div class="bk-grid">
+      <div class="bk-photo" data-reveal><img src="img/bar-interior.webp" alt="Illustration of a moody, gold-lit luxury bar interior"></div>
+      <div class="bk-copy" data-reveal>
+        <h3>The bar pours.<br>The kitchen <em>pairs.</em></h3>
+        <p>From smoky single malts to crisp craft beer, every pour on our bar menu has a plate waiting for it. These are the combinations our regulars swear by —</p>
+      </div>
+    </div>
+    <div class="pair-grid">
+      <div class="pair-card" data-reveal data-tilt><span class="pair-no">01</span><h4>Single Malt Whisky</h4><p class="pair-with">&#10022; Chicken 65</p><p>Peat smoke loves spice. The char of a good malt stands up to fiery, curry-leaf chicken 65 like they were made for each other.</p></div>
+      <div class="pair-card" data-reveal data-tilt><span class="pair-no">02</span><h4>Craft Beer</h4><p class="pair-with">&#10022; Murukku &amp; Masala Peanuts</p><p>Cold, crisp and endlessly refillable. A chilled lager with crunchy murukku is Karaikal's happiest hour.</p></div>
+      <div class="pair-card" data-reveal data-tilt><span class="pair-no">03</span><h4>Tequila</h4><p class="pair-with">&#10022; Lime, Salt &amp; Grilled Chicken</p><p>Bright agave, sharp lime, a lick of salt — then something off the grill. Simple, loud, unforgettable.</p></div>
+      <div class="pair-card" data-reveal data-tilt><span class="pair-no">04</span><h4>Red Wine</h4><p class="pair-with">&#10022; Cheese Platter &amp; Grilled Paneer</p><p>Slow tannins, slow evening. A full-bodied red with cheese or smoky grilled paneer is pure comfort.</p></div>
+      <div class="pair-card" data-reveal data-tilt><span class="pair-no">05</span><h4>Vodka</h4><p class="pair-with">&#10022; Tandoori Starters</p><p>Clean, cold vodka cuts straight through rich tandoori marinades. Order the platter, thank us later.</p></div>
+      <div class="pair-card" data-reveal data-tilt><span class="pair-no">06</span><h4>Brandy</h4><p class="pair-with">&#10022; Roasted Nuts &amp; Chocolate Dessert</p><p>The nightcap. Warm brandy with roasted nuts or something chocolate to close the evening right.</p></div>
+    </div>
+  </div>
+</section>
+
+<div class="divider" aria-hidden="true"><span></span><i>&#10022;</i><span></span></div>
+
+<!-- ══════════ JOURNAL ══════════ -->
+<section id="journal" class="section journal">
+  <div class="wrap">
+    <p class="kicker" data-reveal>The pour journal</p>
+    <h2 data-reveal>Know Your <span class="gold-text">Pour</span></h2>
+    <p class="section-sub" data-reveal>Origin stories, how each spirit is made, how to serve it and what to pair it with — the education behind the celebration.</p>
+    <div id="journalGrid" class="journal-grid"></div>
+  </div>
+</section>
+
+<!-- ══════════ READER ══════════ -->
+<div id="reader" class="reader" role="dialog" aria-modal="true" aria-label="Article">
+  <div class="reader-card">
+    <button id="readerClose" class="reader-close" aria-label="Close article">&times;</button>
+    <div id="readerBody" class="reader-body"></div>
+  </div>
+</div>
+
+<div class="divider" aria-hidden="true"><span></span><i>&#10022;</i><span></span></div>
+
+<!-- ══════════ FAQ ══════════ -->
+<section id="faq" class="section faq">
+  <div class="wrap narrow">
+    <p class="kicker" data-reveal>Good to know</p>
+    <h2 data-reveal>Frequently Asked <span class="gold-text">Questions</span></h2>
+    <div id="faqList" class="faq-list"></div>
+  </div>
+</section>
+
+<!-- ══════════ RESPONSIBLE ══════════ -->
+<section class="responsible">
+  <div class="wrap" data-reveal>
+    <p class="kicker">A note from the house</p>
+    <h3>Sip, don't gulp.</h3>
+    <p>Strictly 18+ only. Please carry a valid ID — we may ask. Never drink and drive, and if you're expecting, please skip the pour entirely. Great evenings are remembered; drink like you want to remember this one.</p>
+  </div>
+</section>
+
+<!-- ══════════ VISIT ══════════ -->
+<section id="visit" class="section visit">
+  <div class="wrap">
+    <p class="kicker" data-reveal>Come say hello</p>
+    <h2 data-reveal>Visit <span class="gold-text">Us</span></h2>
+    <div class="visit-grid">
+      <div class="visit-card" data-reveal>
+        <h3>Find the Vault</h3>
+        <p class="visit-addr">29, Bharathiyar Road, near Old Bus Stand,<br>Kilinjalmedu, Karaikal,<br>Puducherry 609602</p>
+        <p class="visit-hours"><strong>Hours:</strong> <span id="hoursText">Open daily &middot; 11:00 AM &ndash; 10:30 PM</span></p>
+        <div class="visit-actions">
+          <a id="waBtn" class="btn btn-gold" href="#" target="_blank" rel="noopener">WhatsApp Us</a>
+          <a class="btn btn-ghost" href="https://www.instagram.com/happy_liquors" target="_blank" rel="noopener">Instagram</a>
+        </div>
+        <a id="callBtn" class="visit-call" href="#">Call the store</a>
+      </div>
+      <div class="visit-map" data-reveal>
+        <iframe title="Happy Liquors on the map" src="https://www.google.com/maps?q=Happy%20Liquors%2C%2029%20Bharathiyar%20Road%2C%20Karaikal%2C%20Puducherry%20609602&output=embed" loading="lazy" referrerpolicy="no-referrer-when-downgrade" allowfullscreen></iframe>
+        <p class="map-fallback"><a href="https://maps.app.goo.gl/q3PNzdSarZh8tLr48?g_st=ac" target="_blank" rel="noopener">Open in Google Maps ↗</a></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ FOOTER ══════════ -->
+<footer class="footer">
+  <div class="wrap footer-grid">
+    <div>
+      <img src="logo.jpg" alt="Happy Liquors" class="footer-logo">
+      <p class="footer-tag">Premium spirits, a full bar and a kitchen — in the heart of Karaikal.</p>
+    </div>
+    <div class="footer-links">
+      <a href="#collection">Collection</a>
+      <a href="#bar-kitchen">Bar &amp; Kitchen</a>
+      <a href="#journal">Journal</a>
+      <a href="#faq">FAQ</a>
+      <a href="#visit">Visit Us</a>
+    </div>
+    <div class="footer-contact">
+      <a id="waBtn2" class="btn btn-gold btn-sm" href="#" target="_blank" rel="noopener">WhatsApp</a>
+      <a class="btn btn-ghost btn-sm" href="https://www.instagram.com/happy_liquors" target="_blank" rel="noopener">Instagram</a>
+    </div>
+  </div>
+  <div class="footer-base">
+    <span class="age-badge">18+</span>
+    <p>&copy; 2026 Happy Liquors, Karaikal. All rights reserved. &middot; Drink responsibly.</p>
+  </div>
+</footer>
+
+<!-- ══════════ WHATSAPP FLOAT ══════════ -->
+<a id="waFloat" class="wa-float" href="#" target="_blank" rel="noopener" aria-label="Chat on WhatsApp">
+  <svg viewBox="0 0 32 32" fill="currentColor"><path d="M16 3C9.4 3 4 8.4 4 15c0 2.4.7 4.6 1.9 6.5L4 29l7.7-1.8c1.8 1 3.9 1.6 6.1 1.6h.1c6.6 0 12-5.4 12-12S22.6 3 16 3zm0 21.8c-1.9 0-3.7-.5-5.3-1.5l-.4-.2-4.6 1.1 1.2-4.5-.3-.4c-1.1-1.7-1.7-3.6-1.7-5.6C6 9.9 10.1 5.8 15.9 5.8S26 9.9 26 15.7s-4.2 9.1-10 9.1zm5.5-6.8c-.3-.2-1.8-.9-2-1-.3-.1-.5-.2-.7.1-.2.3-.8 1-1 1.2-.2.2-.4.2-.7.1-.3-.2-1.3-.5-2.4-1.5-.9-.8-1.5-1.8-1.7-2.1-.2-.3 0-.5.1-.6l.5-.6c.2-.2.2-.4.3-.6.1-.2 0-.4 0-.6-.1-.2-.7-1.8-1-2.4-.3-.6-.5-.6-.7-.6h-.6c-.2 0-.6.1-.9.4-.3.3-1.1 1.1-1.1 2.7s1.2 3.1 1.3 3.4c.2.2 2.3 3.5 5.5 4.9.8.3 1.4.5 1.8.7.8.2 1.5.2 2 .1.6-.1 1.8-.7 2-1.4.3-.7.3-1.3.2-1.4-.1-.2-.3-.2-.6-.4z"/></svg>
+</a>
+
+<script src="stock.js"></script>
+<script src="articles.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
