@@ -647,7 +647,7 @@ if (sessionStorage.getItem('hl_age_ok') === '1') heroIntro();
             `<button data-star="${n}" class="${answers.stars >= n ? 'lit' : ''}" aria-label="${n} star${n > 1 ? 's' : ''}">★</button>`).join('') +
           `</div>`
         : `<div class="review-opts">` + q.opts.map(o =>
-            `<button class="review-opt${answers[q.key] === o ? ' sel' : ''}" data-opt="${o}">${opt(o)}</button>`).join('') +
+            `<button class="review-opt${answers[q.key] === o ? ' sel' : ''}" data-opt="${o}">${window.__opt(o)}</button>`).join('') +
           `</div>`;
       stepsEl.innerHTML = `
         <div class="review-progress">${prog}</div>
@@ -806,6 +806,19 @@ if (sessionStorage.getItem('hl_age_ok') === '1') heroIntro();
   };
   renderPacks();
   window.__i18nRefresh.push(renderPacks);
+  grid.addEventListener('click', e => {
+    const b = e.target.closest('[data-pack]'); if (!b) return;
+    const pk = PACKS[+b.dataset.pack];
+    const entries = [];
+    pk.items.forEach(([n, p, q]) => {
+      const it = window.__regItem(n, p);
+      if (it) entries.push([it.key, q]);
+    });
+    if (entries.length) {
+      window.HLCart.addMany(entries);
+      document.getElementById('cartBtn').click(); // open drawer as confirmation
+    }
+  });
 })();
 
 /* ═══════════════ BOTTLE FINDER QUIZ ═══════════════ */

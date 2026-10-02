@@ -237,9 +237,9 @@ h3{font-size:clamp(1.4rem,3vw,2rem)}
 .lang-btn:hover{border-color:var(--gold);color:var(--gold-hi);box-shadow:0 0 18px rgba(212,175,55,.2)}
 
 /* ── cart button in header ── */
-.nav-actions{display:flex;align-items:center}
+.nav-actions{display:flex;align-items:center;gap:14px;margin-left:28px}
 .nav-links{margin-left:auto}
-.cart-btn{position:relative;background:none;border:1px solid rgba(212,175,55,.4);border-radius:50%;width:42px;height:42px;display:flex;align-items:center;justify-content:center;color:var(--gold);cursor:pointer;margin-left:16px;transition:.25s;flex:none;padding:0}
+.cart-btn{position:relative;background:none;border:1px solid rgba(212,175,55,.4);border-radius:50%;width:42px;height:42px;display:flex;align-items:center;justify-content:center;color:var(--gold);cursor:pointer;transition:.25s;flex:none;padding:0}
 .cart-btn:hover{border-color:var(--gold);color:var(--gold-hi);box-shadow:0 0 18px rgba(212,175,55,.25)}
 .cart-btn svg{width:20px;height:20px}
 .cart-count{position:absolute;top:-7px;right:-7px;background:var(--gold);color:#0a0805;font-size:.68rem;font-weight:700;min-width:20px;height:20px;border-radius:10px;display:flex;align-items:center;justify-content:center;padding:0 5px;font-family:var(--sans)}
