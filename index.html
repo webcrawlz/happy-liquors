@@ -20,14 +20,14 @@
 <div id="ageGate" class="age-gate" role="dialog" aria-modal="true" aria-label="Age verification">
   <div class="age-card" data-reveal>
     <img src="logo.jpg" alt="Happy Liquors" class="age-logo">
-    <p class="kicker">Please confirm to enter</p>
-    <h2>Are you 18 or older?</h2>
-    <p class="age-sub">The legal drinking age in India is 18+. You must confirm your age to step inside the Vault.</p>
+    <p class="kicker" data-i18n="age_kicker">Please confirm to enter</p>
+    <h2 data-i18n="age_title">Are you 18 or older?</h2>
+    <p class="age-sub" data-i18n="age_sub">The legal drinking age in India is 18+. You must confirm your age to step inside the Vault.</p>
     <div class="age-actions">
-      <button id="ageYes" class="btn btn-gold">I am 18+ — Enter</button>
-      <a class="btn btn-ghost" href="https://www.google.com">Exit</a>
+      <button id="ageYes" class="btn btn-gold" data-i18n="age_yes">I am 18+ — Enter</button>
+      <a class="btn btn-ghost" href="https://www.google.com" data-i18n="age_exit">Exit</a>
     </div>
-    <p class="age-note">Drink responsibly. Never drink and drive.</p>
+    <p class="age-note" data-i18n="age_note">Drink responsibly. Never drink and drive.</p>
   </div>
 </div>
 
@@ -35,13 +35,16 @@
 <header id="nav" class="nav">
   <a href="#hero" class="nav-brand"><img src="logo.jpg" alt="Happy Liquors"></a>
   <nav class="nav-links">
-    <a href="#collection">Collection</a>
-    <a href="#bar-kitchen">Bar &amp; Kitchen</a>
-    <a href="#journal">Journal</a>
-    <a href="#faq">FAQ</a>
-    <a href="#visit" class="nav-cta">Visit Us</a>
+    <a href="#collection" data-i18n="nav_collection">Collection</a>
+    <a href="#offers" data-i18n="nav_offers">Offers</a>
+    <a href="#packs" data-i18n="nav_packs">Packs</a>
+    <a href="#bar-kitchen" data-i18n="nav_barkitchen">Bar &amp; Kitchen</a>
+    <a href="#journal" data-i18n="nav_journal">Journal</a>
+    <a href="#faq" data-i18n="nav_faq">FAQ</a>
+    <a href="#visit" class="nav-cta" data-i18n="nav_visit">Visit Us</a>
   </nav>
   <div class="nav-actions">
+    <button id="langBtn" class="lang-btn" aria-label="Switch language">தமிழ்</button>
     <button id="cartBtn" class="cart-btn" aria-label="Open cart">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8h15l-1.6 9.2a1 1 0 0 1-1 .8H8.7a1 1 0 0 1-1-.8L6 8z"/><path d="M6 8 5 3.5H2"/><circle cx="9.5" cy="20.5" r="1.3"/><circle cx="17" cy="20.5" r="1.3"/></svg>
       <span id="cartCount" class="cart-count" style="display:none">0</span>
@@ -50,11 +53,13 @@
   </div>
 </header>
 <div id="mobileMenu" class="mobile-menu">
-  <a href="#collection">Collection</a>
-  <a href="#bar-kitchen">Bar &amp; Kitchen</a>
-  <a href="#journal">Journal</a>
-  <a href="#faq">FAQ</a>
-  <a href="#visit">Visit Us</a>
+  <a href="#collection" data-i18n="nav_collection">Collection</a>
+  <a href="#offers" data-i18n="nav_offers">Offers</a>
+  <a href="#packs" data-i18n="nav_packs">Packs</a>
+  <a href="#bar-kitchen" data-i18n="nav_barkitchen">Bar &amp; Kitchen</a>
+  <a href="#journal" data-i18n="nav_journal">Journal</a>
+  <a href="#faq" data-i18n="nav_faq">FAQ</a>
+  <a href="#visit" data-i18n="nav_visit">Visit Us</a>
 </div>
 
 <!-- ══════════ HERO ══════════ -->
@@ -64,10 +69,10 @@
   <div class="hero-inner">
     <p class="kicker hero-kicker">Karaikal &middot; Premium Spirits &middot; Bar &amp; Kitchen</p>
     <h1 class="hero-title">Step Inside<br><span class="gold-text">the Vault</span></h1>
-    <p class="hero-sub">490+ labels of the world's finest whisky, brandy, beer, wine &amp; more — plus a bar and a kitchen that know exactly what to pour with your plate.</p>
+    <p class="hero-sub" data-i18n="hero_sub">490+ labels of the world's finest whisky, brandy, beer, wine &amp; more — plus a bar and a kitchen that know exactly what to pour with your plate.</p>
     <div class="hero-actions">
-      <a href="#collection" class="btn btn-gold">Explore the Collection</a>
-      <a href="#visit" class="btn btn-ghost">Find Us</a>
+      <a href="#collection" class="btn btn-gold" data-i18n="hero_cta1">Explore the Collection</a>
+      <a href="#visit" class="btn btn-ghost" data-i18n="hero_cta2">Find Us</a>
     </div>
   </div>
   <a href="#collection" class="scroll-hint" aria-label="Scroll down"><span></span></a>
@@ -83,25 +88,52 @@
 
 <!-- ══════════ STATS ══════════ -->
 <section class="stats">
-  <div class="stat" data-reveal><span class="stat-num" data-count="490" data-suffix="+">0</span><span class="stat-label">Labels on our shelves</span></div>
-  <div class="stat" data-reveal><span class="stat-num" data-count="10">0</span><span class="stat-label">Spirit categories</span></div>
-  <div class="stat" data-reveal><span class="stat-num" data-count="3">0</span><span class="stat-label">Store, bar &amp; kitchen — one roof</span></div>
+  <div class="stat" data-reveal><span class="stat-num" data-count="490" data-suffix="+">0</span><span class="stat-label" data-i18n="stat1">Labels on our shelves</span></div>
+  <div class="stat" data-reveal><span class="stat-num" data-count="10">0</span><span class="stat-label" data-i18n="stat2">Spirit categories</span></div>
+  <div class="stat" data-reveal><span class="stat-num" data-count="3">0</span><span class="stat-label" data-i18n="stat3">Store, bar &amp; kitchen — one roof</span></div>
 </section>
 
 <!-- ══════════ COLLECTION ══════════ -->
 <section id="collection" class="section collection">
   <div class="wrap">
-    <p class="kicker" data-reveal>The shelves</p>
-    <h2 data-reveal>The <span class="gold-text">Collection</span></h2>
-    <p class="section-sub" data-reveal>Every bottle we stock, from everyday pours to rare single malts. Search the vault or browse by spirit.</p>
+    <p class="kicker" data-reveal data-i18n="col_kicker">The shelves</p>
+    <h2 data-reveal data-i18n-html="col_title">The <span class="gold-text">Collection</span></h2>
+    <p class="section-sub" data-reveal data-i18n="col_sub">Every bottle we stock, from everyday pours to rare single malts. Search the vault or browse by spirit.</p>
+    <p class="finder-hint" data-reveal data-i18n-html="finder_hint"><strong>New:</strong> not sure what to pick? Tap <strong>Find your bottle</strong> below — answer 3 quick questions on budget, occasion and taste, and we'll suggest the perfect pour from our shelves.</p>
     <div class="collection-tools" data-reveal>
       <div id="catTabs" class="cat-tabs"></div>
-      <input id="stockSearch" class="stock-search" type="search" placeholder="Search a brand — try &quot;single malt&quot;…" aria-label="Search brands">
+      <input id="stockSearch" class="stock-search" type="search" data-i18n-ph="search_ph" placeholder="Search a brand — try &quot;single malt&quot;…" aria-label="Search brands">
+      <button id="finderBtn" class="btn btn-gold btn-sm" data-i18n="finder_btn">Find your bottle ✦</button>
     </div>
+    <div id="priceTabs" class="price-tabs" data-reveal></div>
     <p id="stockCount" class="stock-count"></p>
     <div id="stockGrid" class="stock-grid"></div>
-    <div class="center"><button id="showMore" class="btn btn-ghost">Show more</button></div>
-    <p class="fineprint">Prices and availability at the store — our shelves are refreshed with the season.</p>
+    <div class="center"><button id="showMore" class="btn btn-ghost" data-i18n="show_more">Show more</button></div>
+    <p class="fineprint" data-i18n="col_fine">Prices and availability at the store — our shelves are refreshed with the season.</p>
+  </div>
+</section>
+
+<div class="divider" aria-hidden="true"><span></span><i>&#10022;</i><span></span></div>
+
+<!-- ══════════ OFFERS ══════════ -->
+<section id="offers" class="section offers">
+  <div class="wrap">
+    <p class="kicker" data-reveal data-i18n="off_kicker">Rewards &amp; announcements</p>
+    <h2 data-reveal data-i18n-html="off_title">Offers at <span class="gold-text">the Vault</span></h2>
+    <p class="section-sub" data-reveal data-i18n="off_sub">Deals worth raising a glass to — check back often, the shelf keeps surprising.</p>
+    <div id="offerGrid" class="offer-grid"></div>
+  </div>
+</section>
+
+<div class="divider" aria-hidden="true"><span></span><i>&#10022;</i><span></span></div>
+
+<!-- ══════════ PARTY PACKS ══════════ -->
+<section id="packs" class="section packs">
+  <div class="wrap">
+    <p class="kicker" data-reveal data-i18n="pack_kicker">Ready-made bundles</p>
+    <h2 data-reveal data-i18n-html="pack_title">Party <span class="gold-text">Packs</span></h2>
+    <p class="section-sub" data-reveal data-i18n="pack_sub">Curated bundles for every kind of night — one tap drops the whole pack into your cart.</p>
+    <div id="packGrid" class="pack-grid"></div>
   </div>
 </section>
 
@@ -110,9 +142,9 @@
 <!-- ══════════ BAR & KITCHEN ══════════ -->
 <section id="bar-kitchen" class="section bar-kitchen">
   <div class="wrap">
-    <p class="kicker" data-reveal>More than a store</p>
-    <h2 data-reveal>Sip <span class="gold-text">&amp;</span> Savour</h2>
-    <p class="section-sub" data-reveal>Happy Liquors isn't just a shop — it's a bar and a restaurant. Pull up a chair, and let our pairings do the talking.</p>
+    <p class="kicker" data-reveal data-i18n="bk_kicker">More than a store</p>
+    <h2 data-reveal data-i18n-html="bk_title">Sip <span class="gold-text">&amp;</span> Savour</h2>
+    <p class="section-sub" data-reveal data-i18n="bk_sub">Happy Liquors isn't just a shop — it's a bar and a restaurant. Pull up a chair, and let our pairings do the talking.</p>
     <div class="bk-grid">
       <div class="bk-photo" data-reveal><img src="bar-interior.webp" alt="Illustration of a moody, gold-lit luxury bar interior"></div>
       <div class="bk-copy" data-reveal>
@@ -136,9 +168,9 @@
 <!-- ══════════ JOURNAL ══════════ -->
 <section id="journal" class="section journal">
   <div class="wrap">
-    <p class="kicker" data-reveal>The pour journal</p>
-    <h2 data-reveal>Know Your <span class="gold-text">Pour</span></h2>
-    <p class="section-sub" data-reveal>Origin stories, how each spirit is made, how to serve it and what to pair it with — the education behind the celebration.</p>
+    <p class="kicker" data-reveal data-i18n="j_kicker">The pour journal</p>
+    <h2 data-reveal data-i18n-html="j_title">Know Your <span class="gold-text">Pour</span></h2>
+    <p class="section-sub" data-reveal data-i18n="j_sub">Origin stories, how each spirit is made, how to serve it and what to pair it with — the education behind the celebration.</p>
     <div id="journalGrid" class="journal-grid"></div>
   </div>
 </section>
@@ -156,8 +188,8 @@
 <!-- ══════════ FAQ ══════════ -->
 <section id="faq" class="section faq">
   <div class="wrap narrow">
-    <p class="kicker" data-reveal>Good to know</p>
-    <h2 data-reveal>Frequently Asked <span class="gold-text">Questions</span></h2>
+    <p class="kicker" data-reveal data-i18n="faq_kicker">Good to know</p>
+    <h2 data-reveal data-i18n-html="faq_title">Frequently Asked <span class="gold-text">Questions</span></h2>
     <div id="faqList" class="faq-list"></div>
   </div>
 </section>
@@ -165,31 +197,31 @@
 <!-- ══════════ RESPONSIBLE ══════════ -->
 <section class="responsible">
   <div class="wrap" data-reveal>
-    <p class="kicker">A note from the house</p>
-    <h3>Sip, don't gulp.</h3>
-    <p>Strictly 18+ only. Please carry a valid ID — we may ask. Never drink and drive, and if you're expecting, please skip the pour entirely. Great evenings are remembered; drink like you want to remember this one.</p>
+    <p class="kicker" data-i18n="resp_kicker">A note from the house</p>
+    <h3 data-i18n="resp_title">Sip, don't gulp.</h3>
+    <p data-i18n="resp_text">Strictly 18+ only. Please carry a valid ID — we may ask. Never drink and drive, and if you're expecting, please skip the pour entirely. Great evenings are remembered; drink like you want to remember this one.</p>
   </div>
 </section>
 
 <!-- ══════════ VISIT ══════════ -->
 <section id="visit" class="section visit">
   <div class="wrap">
-    <p class="kicker" data-reveal>Come say hello</p>
-    <h2 data-reveal>Visit <span class="gold-text">Us</span></h2>
+    <p class="kicker" data-reveal data-i18n="visit_kicker">Come say hello</p>
+    <h2 data-reveal data-i18n-html="visit_title">Visit <span class="gold-text">Us</span></h2>
     <div class="visit-grid">
       <div class="visit-card" data-reveal>
-        <h3>Find the Vault</h3>
+        <h3>Happy Liquors</h3>
         <p class="visit-addr">29, Bharathiyar Road, near Old Bus Stand,<br>Kilinjalmedu, Karaikal,<br>Puducherry 609602</p>
-        <p class="visit-hours"><strong>Hours:</strong> <span id="hoursText">Open daily &middot; 11:00 AM &ndash; 10:30 PM</span></p>
+        <p class="visit-hours"><strong data-i18n="hours_label">Hours:</strong> <span id="hoursText">Open daily &middot; 11:00 AM &ndash; 10:30 PM</span></p>
         <div class="visit-actions">
-          <a id="waBtn" class="btn btn-gold" href="#" target="_blank" rel="noopener">WhatsApp Us</a>
+          <a id="waBtn" class="btn btn-gold" href="#" target="_blank" rel="noopener" data-i18n="wa_us">WhatsApp Us</a>
           <a class="btn btn-ghost" href="https://www.instagram.com/happy_liquors" target="_blank" rel="noopener">Instagram</a>
         </div>
         <a id="callBtn" class="visit-call" href="#">Call the store</a>
       </div>
       <div class="visit-map" data-reveal>
         <iframe title="Happy Liquors on the map" src="https://www.google.com/maps?q=Happy%20Liquors%2C%2029%20Bharathiyar%20Road%2C%20Karaikal%2C%20Puducherry%20609602&output=embed" loading="lazy" referrerpolicy="no-referrer-when-downgrade" allowfullscreen></iframe>
-        <p class="map-fallback"><a href="https://maps.app.goo.gl/q3PNzdSarZh8tLr48?g_st=ac" target="_blank" rel="noopener">Open in Google Maps ↗</a></p>
+        <p class="map-fallback"><a href="https://maps.app.goo.gl/q3PNzdSarZh8tLr48?g_st=ac" target="_blank" rel="noopener" data-i18n="maps_open">Open in Google Maps ↗</a></p>
       </div>
     </div>
   </div>
@@ -200,23 +232,27 @@
   <div class="wrap footer-grid">
     <div>
       <img src="logo.jpg" alt="Happy Liquors" class="footer-logo">
-      <p class="footer-tag">Premium spirits, a full bar and a kitchen — in the heart of Karaikal.</p>
+      <p class="footer-tag" data-i18n="footer_tag">Premium spirits, a full bar and a kitchen — in the heart of Karaikal.</p>
     </div>
     <div class="footer-links">
-      <a href="#collection">Collection</a>
-      <a href="#bar-kitchen">Bar &amp; Kitchen</a>
-      <a href="#journal">Journal</a>
-      <a href="#faq">FAQ</a>
-      <a href="#visit">Visit Us</a>
+      <a href="#collection" data-i18n="nav_collection">Collection</a>
+      <a href="#offers" data-i18n="nav_offers">Offers</a>
+      <a href="#packs" data-i18n="nav_packs">Packs</a>
+      <a href="#bar-kitchen" data-i18n="nav_barkitchen">Bar &amp; Kitchen</a>
+      <a href="#journal" data-i18n="nav_journal">Journal</a>
+      <a href="#faq" data-i18n="nav_faq">FAQ</a>
+      <a href="#visit" data-i18n="nav_visit">Visit Us</a>
+      <a href="terms.html">Terms</a>
+      <a href="privacy.html">Privacy</a>
     </div>
     <div class="footer-contact">
-      <a id="waBtn2" class="btn btn-gold btn-sm" href="#" target="_blank" rel="noopener">WhatsApp</a>
+      <a id="waBtn2" class="btn btn-gold btn-sm" href="#" target="_blank" rel="noopener" data-i18n="wa_short">WhatsApp</a>
       <a class="btn btn-ghost btn-sm" href="https://www.instagram.com/happy_liquors" target="_blank" rel="noopener">Instagram</a>
     </div>
   </div>
   <div class="footer-base">
     <span class="age-badge">18+</span>
-    <p>&copy; 2026 Happy Liquors, Karaikal. All rights reserved. &middot; Drink responsibly.</p>
+    <p data-i18n-html="footer_rights">&copy; 2026 Happy Liquors, Karaikal. All rights reserved. &middot; Drink responsibly.</p>
   </div>
 </footer>
 
@@ -224,20 +260,37 @@
 <div id="cartOverlay" class="cart-overlay"></div>
 <aside id="cartDrawer" class="cart-drawer" aria-label="Your order">
   <div class="cart-head">
-    <h3>Your Order</h3>
+    <h3 data-i18n="cart_title">Your Order</h3>
     <div class="cart-head-actions">
-      <button id="cartClear" class="cart-clear" style="display:none">Clear</button>
+      <button id="cartClear" class="cart-clear" style="display:none" data-i18n="cart_clear">Clear</button>
       <button id="cartClose" class="cart-close" aria-label="Close cart">&times;</button>
     </div>
   </div>
   <div id="cartItems" class="cart-items"></div>
+  <div id="orderHistory" class="order-history"></div>
   <div class="cart-foot-wrap">
-    <input id="buyerPhone" type="tel" inputmode="tel" autocomplete="tel" maxlength="15" placeholder="Your mobile number (optional)">
-    <div class="cart-total"><span>Total</span><strong id="cartTotal">₹0</strong></div>
-    <a id="orderWa" class="btn btn-gold cart-order disabled" href="#" target="_blank" rel="noopener">Order on WhatsApp</a>
-    <p class="fineprint cart-note">The shop confirms your order and payment on WhatsApp.</p>
+    <input id="buyerPhone" type="tel" inputmode="tel" autocomplete="tel" maxlength="15" data-i18n-ph="cart_phone_ph" placeholder="Your mobile number (optional)">
+    <div class="cart-total"><span data-i18n="cart_total">Total</span><strong id="cartTotal">₹0</strong></div>
+    <a id="orderWa" class="btn btn-gold cart-order disabled" href="#" target="_blank" rel="noopener" data-i18n="cart_order">Order on WhatsApp</a>
+    <p class="fineprint cart-note" data-i18n="cart_note">The shop confirms your order and payment on WhatsApp.</p>
   </div>
 </aside>
+
+<!-- ══════════ REVIEW GENERATOR ══════════ -->
+<div id="reviewTool" class="review-tool" role="dialog" aria-modal="true" aria-label="Review generator">
+  <div class="review-card">
+    <button id="reviewClose" class="review-close" aria-label="Close">&times;</button>
+    <div id="reviewSteps"></div>
+  </div>
+</div>
+
+<!-- ══════════ BOTTLE FINDER ══════════ -->
+<div id="finderTool" class="review-tool" role="dialog" aria-modal="true" aria-label="Bottle finder">
+  <div class="review-card">
+    <button class="review-close" aria-label="Close" data-finder-close>&times;</button>
+    <div id="finderSteps"></div>
+  </div>
+</div>
 
 <!-- ══════════ WHATSAPP FLOAT ══════════ -->
 <a id="waFloat" class="wa-float" href="#" target="_blank" rel="noopener" aria-label="Chat on WhatsApp">
@@ -246,6 +299,7 @@
 
 <script src="stock.js"></script>
 <script src="articles.js"></script>
+<script src="i18n.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

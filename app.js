@@ -50,14 +50,19 @@ const waLink = (msg) =>
     if (el) el.href = waLink(msg);
   });
   const call = document.getElementById('callBtn');
-  if (call) { call.href = CONFIG.PHONE_LINK; call.textContent = 'Call the store · ' + CONFIG.PHONE_DISPLAY; }
+  if (call) { call.href = CONFIG.PHONE_LINK; }
   const hours = document.getElementById('hoursText');
-  if (hours) hours.textContent = CONFIG.HOURS;
+  const syncContactLang = () => {
+    if (call) call.textContent = t('call_store') + ' · ' + CONFIG.PHONE_DISPLAY;
+    if (hours) hours.textContent = t('hours');
+  };
+  syncContactLang();
+  window.__i18nRefresh.push(syncContactLang);
 })();
 
 /* ═══════════════ CART — WhatsApp ordering ═══════════════ */
 (function cart(){
-  const LS_KEY = 'hl_cart_v1', PHONE_KEY = 'hl_cart_phone';
+  const LS_KEY = 'hl_cart_v1', PHONE_KEY = 'hl_cart_phone', ORD_KEY = 'hl_orders_v1';
   const inr = n => '₹' + Number(n).toLocaleString('en-IN');
 
   // registry: key -> {cat,n,p,r}
@@ -68,6 +73,9 @@ const waLink = (msg) =>
   let items = {};
   try { items = JSON.parse(localStorage.getItem(LS_KEY)) || {}; } catch(e){ items = {}; }
   Object.keys(items).forEach(k => { if (!REG[k]) delete items[k]; }); // drop stale keys
+  let orders = [];
+  try { orders = JSON.parse(localStorage.getItem(ORD_KEY)) || []; } catch(e){ orders = []; }
+  if (!Array.isArray(orders)) orders = [];
 
   const save = () => { try { localStorage.setItem(LS_KEY, JSON.stringify(items)); } catch(e){} };
   const qtyOf = k => (items[k] && items[k].q) || 0;
@@ -80,6 +88,7 @@ const waLink = (msg) =>
   const orderBtn= document.getElementById('orderWa');
   const phoneEl = document.getElementById('buyerPhone');
   const clearBtn= document.getElementById('cartClear');
+  const histEl  = document.getElementById('orderHistory');
   try { phoneEl.value = localStorage.getItem(PHONE_KEY) || ''; } catch(e){}
   phoneEl.addEventListener('input', () => {
     try { localStorage.setItem(PHONE_KEY, phoneEl.value); } catch(e){}
@@ -90,7 +99,7 @@ const waLink = (msg) =>
     `<div class="stepper"><button data-act="dec" data-key="${k}" aria-label="Remove one">−</button><span>${q}</span><button data-act="inc" data-key="${k}" aria-label="Add one">+</button></div>`;
   window.__qtyCtrlHTML = k => {
     const q = qtyOf(k);
-    return q ? stepperHTML(k, q) : `<button class="add-btn" data-act="add" data-key="${k}">Add</button>`;
+    return q ? stepperHTML(k, q) : `<button class="add-btn" data-act="add" data-key="${k}">${t('add')}</button>`;
   };
   const syncCardCtrls = () =>
     document.querySelectorAll('[data-qtyctrl]').forEach(el => { el.innerHTML = window.__qtyCtrlHTML(el.dataset.qtyctrl); });
@@ -116,6 +125,25 @@ const waLink = (msg) =>
     orderBtn.href = `https://wa.me/${CONFIG.WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`;
   }
 
+  function renderHistory(){
+    if (!orders.length) { histEl.innerHTML = ''; histEl.style.display = 'none'; return; }
+    histEl.style.display = '';
+    histEl.innerHTML = `<p class="hist-title">${t('hist_title')}</p>` + orders.map((o, i) => {
+      const d = new Date(o.t).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
+      return `<div class="hist-row">
+        <span>${d} · ${o.n} item${o.n > 1 ? 's' : ''} · ${inr(o.total)}</span>
+        <button class="hist-reorder" data-reorder="${i}">${t('hist_reorder')}</button>
+      </div>`;
+    }).join('');
+  }
+
+  function reorder(i){
+    const o = orders[i]; if (!o) return;
+    items = {};
+    Object.keys(o.items || {}).forEach(k => { if (REG[k]) items[k] = { q: o.items[k] }; });
+    save(); syncCardCtrls(); renderDrawer();
+  }
+
   function renderDrawer(){
     const keys = Object.keys(items);
     listEl.innerHTML = keys.length ? keys.map(k => {
@@ -130,14 +158,15 @@ const waLink = (msg) =>
       </div>`;
     }).join('') :
     `<div class="cart-empty">
-       <p class="cart-empty-title">Your cart is empty</p>
-       <p class="fineprint">Browse the Collection and tap Add on anything you like.</p>
+       <p class="cart-empty-title">${t('cart_empty_t')}</p>
+       <p class="fineprint">${t('cart_empty_s')}</p>
      </div>`;
     const { n, amt } = totals();
     totalEl.textContent = inr(amt);
     countEl.textContent = n;
     countEl.style.display = n ? '' : 'none';
     clearBtn.style.display = keys.length ? '' : 'none';
+    renderHistory();
     syncOrderLink();
   }
 
@@ -146,14 +175,40 @@ const waLink = (msg) =>
     if (q <= 0) delete items[k]; else items[k] = { q };
     save(); syncCardCtrls(); renderDrawer();
   }
-  window.HLCart = { add: k => mutate(k, 1), clear: () => { items = {}; save(); syncCardCtrls(); renderDrawer(); } };
+  window.HLCart = {
+    add: k => mutate(k, 1),
+    clear: () => { items = {}; save(); syncCardCtrls(); renderDrawer(); },
+    addMany: entries => {
+      entries.forEach(([k, q]) => { if (REG[k]) items[k] = { q: qtyOf(k) + q }; });
+      save(); syncCardCtrls(); renderDrawer();
+    },
+  };
+  window.__stockItems = Object.keys(REG).map(k => ({ key: k, ...REG[k] }));
+  window.__regItem = (n, p) => {
+    const k = Object.keys(REG).find(k => REG[k].n === n && REG[k].p === p);
+    return k ? { key: k, ...REG[k] } : null;
+  };
+  window.__i18nRefresh.push(() => { syncCardCtrls(); renderDrawer(); });
 
   document.addEventListener('click', e => {
+    const ro = e.target.closest('[data-reorder]');
+    if (ro) { reorder(+ro.dataset.reorder); return; }
     const b = e.target.closest('[data-act]');
     if (!b || !REG[b.dataset.key]) return;
     const k = b.dataset.key, act = b.dataset.act;
     if (act === 'add' || act === 'inc') mutate(k, 1);
     else if (act === 'dec') mutate(k, -1);
+  });
+
+  // snapshot the order into history when it goes to WhatsApp
+  orderBtn.addEventListener('click', () => {
+    const keys = Object.keys(items);
+    if (!keys.length) return;
+    const { n, amt } = totals();
+    orders.unshift({ t: Date.now(), items: Object.fromEntries(keys.map(k => [k, items[k].q])), total: amt, n });
+    orders = orders.slice(0, 5);
+    try { localStorage.setItem(ORD_KEY, JSON.stringify(orders)); } catch(e){}
+    renderHistory();
   });
 
   const open  = () => { renderDrawer(); drawer.classList.add('open'); overlay.classList.add('show'); document.body.style.overflow = 'hidden'; };
@@ -359,8 +414,29 @@ if (sessionStorage.getItem('hl_age_ok') === '1') heroIntro();
   let activeCat = 'All', query = '', shown = 24;
   const PAGE = 24;
 
-  tabs.innerHTML = cats.map(c =>
-    `<button class="cat-tab${c === 'All' ? ' active' : ''}" data-cat="${c}">${c}</button>`).join('');
+  const BANDS = [
+    { k: 'band_all', min: 0, max: Infinity },
+    { k: 'band_1', min: 0, max: 500 },
+    { k: 'band_2', min: 500, max: 1000 },
+    { k: 'band_3', min: 1000, max: 2500 },
+    { k: 'band_4', min: 2500, max: Infinity },
+  ];
+  let priceBand = 0;
+  const priceTabs = document.getElementById('priceTabs');
+  function renderTabs(){
+    tabs.innerHTML = cats.map(c =>
+      `<button class="cat-tab${c === activeCat ? ' active' : ''}" data-cat="${c}">${t('cat_' + c)}</button>`).join('');
+    priceTabs.innerHTML = BANDS.map((b, i) =>
+      `<button class="price-tab${i === priceBand ? ' active' : ''}" data-band="${i}">${t(b.k)}</button>`).join('');
+  }
+  renderTabs();
+  priceTabs.addEventListener('click', e => {
+    const b = e.target.closest('.price-tab'); if (!b) return;
+    priceTabs.querySelectorAll('.price-tab').forEach(t => t.classList.remove('active'));
+    b.classList.add('active');
+    priceBand = +b.dataset.band; shown = PAGE; render();
+  });
+
   tabs.addEventListener('click', e => {
     const b = e.target.closest('.cat-tab'); if (!b) return;
     tabs.querySelectorAll('.cat-tab').forEach(t => t.classList.remove('active'));
@@ -386,16 +462,18 @@ if (sessionStorage.getItem('hl_age_ok') === '1') heroIntro();
   function render(){
     let list = ITEMS;
     if (activeCat !== 'All') list = list.filter(i => i.cat === activeCat);
+    const band = BANDS[priceBand];
+    list = list.filter(i => i.r >= band.min && i.r < band.max);
     if (query) list = list.filter(i =>
       (i.n + ' ' + i.p + ' ' + i.cat).toLowerCase().includes(query));
     const total = list.length;
     const slice = list.slice(0, shown);
-    count.textContent = `Showing ${slice.length} of ${total} labels${query ? ` for \u201c${search.value.trim()}\u201d` : ''}`;
+    count.textContent = t('showing').replace('{a}', slice.length).replace('{b}', total) + (query ? ` — “${search.value.trim()}”` : '');
     grid.innerHTML = slice.map(i => {
       const key = `${i.cat}|${i.n}|${i.p}`;
       return `
       <div class="stock-card" data-tilt>
-        <span class="stock-cat">${i.cat}</span>
+        <span class="stock-cat">${t('cat_' + i.cat)}</span>
         <h4 class="stock-name">${i.n}</h4>
         <p class="stock-pack">${i.p || ''}</p>
         <div class="card-foot">
@@ -403,7 +481,7 @@ if (sessionStorage.getItem('hl_age_ok') === '1') heroIntro();
           <div class="qty-ctrl" data-qtyctrl="${key}">${window.__qtyCtrlHTML ? window.__qtyCtrlHTML(key) : ''}</div>
         </div>
       </div>`;
-    }).join('') || `<p class="fineprint">Nothing found — try another brand or spirit.</p>`;
+    }).join('') || `<p class="fineprint">${t('nothing_found')}</p>`;
     more.style.display = shown < total ? '' : 'none';
     bindTilt(grid);
     if (window.ScrollTrigger) ScrollTrigger.refresh();
@@ -425,6 +503,7 @@ if (sessionStorage.getItem('hl_age_ok') === '1') heroIntro();
   }
   bindTilt(document);
   render();
+  window.__i18nRefresh.push(() => { renderTabs(); render(); });
 })();
 
 /* ═══════════════ JOURNAL + READER ═══════════════ */
@@ -493,4 +572,353 @@ if (sessionStorage.getItem('hl_age_ok') === '1') heroIntro();
   // All dynamic content is now rendered — start observing reveals + counters.
   if (window.__observeReveals) window.__observeReveals();
   if (window.__initCounters) window.__initCounters();
+})();
+
+/* ═══════════════ REVIEW GENERATOR ═══════════════ */
+(function reviewTool(){
+  const MAPS_LINK = 'https://maps.app.goo.gl/q3PNzdSarZh8tLr48?g_st=ac';
+  const QUESTIONS = [
+    { key: 'stars', type: 'stars', qk: 'r_q0', hintk: 'r_q0h' },
+    { key: 'bought', qk: 'r_q1', opts: ['Whisky', 'Brandy', 'Beer', 'Vodka', 'Rum', 'Wine', 'Tequila', 'Gin', 'Multiple bottles'] },
+    { key: 'service', qk: 'r_q2', opts: ['Excellent', 'Good', 'Okay', 'Could be better'] },
+    { key: 'standout', qk: 'r_q3', opts: ['Huge collection', 'Helpful staff', 'Fair prices', 'Quick billing', 'Bar & kitchen'] },
+    { key: 'recommend', qk: 'r_q4', opts: ['Definitely', 'Yes', 'Maybe not'] },
+  ];
+
+  const tool = document.getElementById('reviewTool');
+  const stepsEl = document.getElementById('reviewSteps');
+  let step = 0, answers = {}, generated = '';
+  const pick = a => a[(Math.random() * a.length) | 0];
+  const answered = () => {
+    const q = QUESTIONS[step];
+    return q.type === 'stars' ? !!answers.stars : !!answers[q.key];
+  };
+
+  function generate(){
+    const s = answers.stars || 5;
+    const bought = (answers.bought || '').toLowerCase();
+    const boughtTxt = !answers.bought || bought === 'multiple bottles' ? 'a few bottles' : 'some ' + bought;
+    const parts = [];
+    if (s >= 4) {
+      parts.push(pick([
+        'Had a great experience at Happy Liquors!',
+        'Happy Liquors is the best liquor store in Karaikal.',
+        'Really impressed with Happy Liquors!'
+      ]));
+      parts.push(`Picked up ${boughtTxt} — great selection and fair prices.`);
+      const svc = {
+        'Excellent': 'The staff were friendly and genuinely helpful.',
+        'Good': 'Service was good and billing was quick.',
+        'Okay': 'Service was okay.',
+        'Could be better': 'Service has room to improve, but the collection makes up for it.'
+      }[answers.service];
+      if (svc) parts.push(svc);
+      const st = {
+        'Huge collection': 'The range of brands is unmatched in town.',
+        'Helpful staff': 'The team knows their spirits and guides you well.',
+        'Fair prices': 'Prices are honest — no surprises at the counter.',
+        'Quick billing': 'In and out in minutes; billing was super quick.',
+        'Bar & kitchen': 'Loved the bar & kitchen side too — a great place to unwind.'
+      }[answers.standout];
+      if (st) parts.push(st);
+      parts.push(
+        answers.recommend === 'Definitely' ? 'Highly recommended!' :
+        answers.recommend === 'Yes' ? 'Would definitely visit again.' : 'Worth checking out.');
+    } else if (s === 3) {
+      parts.push(pick(['A decent liquor store in Karaikal.', 'Happy Liquors is a solid option in town.']));
+      parts.push(`Picked up ${boughtTxt}. Good collection; service was average.`);
+      parts.push('Worth a visit if you are nearby.');
+    } else {
+      parts.push('Visited Happy Liquors recently.');
+      parts.push(`Picked up ${boughtTxt}. The collection is good, but my experience with the service could have been better.`);
+      parts.push('Hope they keep improving — the store has real potential.');
+    }
+    return parts.join(' ');
+  }
+
+  function render(){
+    const prog = QUESTIONS.map((_, i) => `<i class="${i < step ? 'done' : ''}"></i>`).join('') +
+      `<i class="${step >= QUESTIONS.length ? 'done' : ''}"></i>`;
+    if (step < QUESTIONS.length) {
+      const q = QUESTIONS[step];
+      const body = q.type === 'stars'
+        ? `<div class="review-stars" id="starRow">` +
+          [1, 2, 3, 4, 5].map(n =>
+            `<button data-star="${n}" class="${answers.stars >= n ? 'lit' : ''}" aria-label="${n} star${n > 1 ? 's' : ''}">★</button>`).join('') +
+          `</div>`
+        : `<div class="review-opts">` + q.opts.map(o =>
+            `<button class="review-opt${answers[q.key] === o ? ' sel' : ''}" data-opt="${o}">${opt(o)}</button>`).join('') +
+          `</div>`;
+      stepsEl.innerHTML = `
+        <div class="review-progress">${prog}</div>
+        <p class="review-q">${t(q.qk)}</p>
+        <p class="review-hint">${t(q.hintk || 'r_hint')}</p>
+        ${body}
+        <div class="review-nav">
+          ${step > 0 ? `<button class="review-back" id="rvBack">${t('r_back')}</button>` : '<span></span>'}
+          <button class="btn btn-gold review-next${answered() ? '' : ' disabled'}" id="rvNext">${step === QUESTIONS.length - 1 ? t('r_gen') : t('r_next')}</button>
+        </div>`;
+      const row = document.getElementById('starRow');
+      if (row) row.addEventListener('click', e => {
+        const b = e.target.closest('[data-star]'); if (!b) return;
+        answers.stars = +b.dataset.star;
+        row.querySelectorAll('button').forEach(x => x.classList.toggle('lit', +x.dataset.star <= answers.stars));
+        document.getElementById('rvNext').classList.remove('disabled');
+      });
+      stepsEl.querySelectorAll('[data-opt]').forEach(b => b.addEventListener('click', () => {
+        answers[q.key] = b.dataset.opt;
+        stepsEl.querySelectorAll('[data-opt]').forEach(x => x.classList.toggle('sel', x === b));
+        document.getElementById('rvNext').classList.remove('disabled');
+      }));
+      const back = document.getElementById('rvBack');
+      if (back) back.addEventListener('click', () => { step--; render(); });
+      document.getElementById('rvNext').addEventListener('click', () => {
+        if (!answered()) return;
+        step++;
+        if (step === QUESTIONS.length) generated = generate();
+        render();
+      });
+    } else {
+      stepsEl.innerHTML = `
+        <div class="review-progress">${prog}</div>
+        <p class="review-result-label">${t('r_result')}</p>
+        <textarea id="reviewText">${generated}</textarea>
+        <div class="review-actions">
+          <button class="review-copy" id="rvCopy">${t('r_copy')}</button>
+          <a class="btn btn-gold" id="rvPost" href="${MAPS_LINK}" target="_blank" rel="noopener" style="text-align:center">${t('r_post')}</a>
+        </div>
+        <p class="fineprint" style="text-align:center">${t('r_how')}</p>
+        <div style="text-align:center"><button class="review-again" id="rvAgain">${t('r_again')}</button></div>
+        <div class="review-nav" style="margin-top:18px">
+          <button class="review-back" id="rvBack">← Back</button><span></span>
+        </div>`;
+      const ta = document.getElementById('reviewText');
+      document.getElementById('rvCopy').addEventListener('click', async function(){
+        const done = () => { this.textContent = t('r_copied'); setTimeout(() => this.textContent = t('r_copy'), 2000); };
+        try { await navigator.clipboard.writeText(ta.value); done(); }
+        catch(e) { ta.select(); try { document.execCommand('copy'); done(); } catch(_) {} }
+      });
+      document.getElementById('rvAgain').addEventListener('click', () => { generated = generate(); ta.value = generated; });
+      document.getElementById('rvBack').addEventListener('click', () => { step--; render(); });
+    }
+  }
+
+  const open = () => {
+    step = 0; answers = {}; generated = '';
+    render(); tool.classList.add('open'); document.body.style.overflow = 'hidden';
+  };
+  const close = () => { tool.classList.remove('open'); document.body.style.overflow = ''; };
+  document.getElementById('reviewClose').addEventListener('click', close);
+  tool.addEventListener('click', e => { if (e.target === tool) close(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && tool.classList.contains('open')) close(); });
+  document.addEventListener('click', e => {
+    if (e.target.closest('[data-open-review]')) open();
+  });
+  window.__openReviewTool = open;
+  window.__i18nRefresh.push(() => { if (tool.classList.contains('open')) render(); });
+})();
+
+/* ═══════════════ OFFERS ═══════════════ */
+(function offers(){
+  // Abi: add/remove offers here — {tag, title, desc, cta, link}
+  const OFFERS = [
+    {
+      tag: 'REWARD', tag_ta: 'பரிசு',
+      title: 'Review us, get up to ₹100 store credit',
+      title_ta: 'ரிவியூ எழுதுங்கள், ₹100 ஸ்டோர் கிரெடிட் பெறுங்கள்',
+      desc: 'Had a good pour with us? Answer 5 quick questions and we\'ll draft your Google review for you — post it and get up to ₹100 redeemable store credit on your next visit. Just show your review at the counter to claim it.',
+      desc_ta: 'எங்களுடன் நல்ல அனுபவமா? 5 எளிய கேள்விகளுக்கு பதிலளியுங்கள் — உங்கள் கூகுள் ரிவியூவை நாங்கள் தயார் செய்து தருகிறோம். பதிவிட்டு கவுண்டரில் காட்டினால், அடுத்த வருகையில் ₹100 வரை ஸ்டோர் கிரெடிட்.',
+      cta: 'Write my review', cta_ta: 'ரிவியூ எழுதுங்கள்',
+      tool: 'review'
+    }
+  ];
+  const grid = document.getElementById('offerGrid');
+  if (!grid || !OFFERS.length) return;
+  const renderOffers = () => {
+    const L = window.__lang();
+    grid.innerHTML = OFFERS.map(o => `
+    <article class="offer-card" data-reveal>
+      <span class="offer-tag">${L === 'ta' && o.tag_ta ? o.tag_ta : o.tag}</span>
+      <h3>${L === 'ta' && o.title_ta ? o.title_ta : o.title}</h3>
+      <p>${L === 'ta' && o.desc_ta ? o.desc_ta : o.desc}</p>
+      ${o.tool === 'review'
+        ? `<button class="btn btn-gold btn-sm" data-open-review>${L === 'ta' && o.cta_ta ? o.cta_ta : o.cta}</button>`
+        : (o.cta && o.link ? `<a class="btn btn-gold btn-sm" href="${o.link}" target="_blank" rel="noopener">${o.cta} ↗</a>` : '')}
+    </article>`).join('');
+    if (window.__observeReveals) window.__observeReveals();
+  };
+  renderOffers();
+  window.__i18nRefresh.push(renderOffers);
+})();
+
+/* ═══════════════ PARTY PACKS ═══════════════ */
+(function packs(){
+  // Abi: edit packs here — [exact product name, pack size, quantity]
+  const PACKS = [
+    {
+      tag: 'MATCH NIGHT', tag_ta: 'மேட்ச் நைட்',
+      name: 'Match Night Pack', name_ta: 'மேட்ச் நைட் பேக்',
+      desc: 'Eight chilled strong beers — built for match nights with the gang.',
+      desc_ta: 'கேங்குடன் மேட்ச் பார்க்க — 8 குளிர்ந்த ஸ்ட்ராங் பீர்கள்.',
+      items: [['Kingfisher Strong Beer (New)', '650ml', 8]]
+    },
+    {
+      tag: 'HOUSE PARTY', tag_ta: 'வீட்டு பார்ட்டி',
+      name: 'House Party for 8', name_ta: '8 பேர் வீட்டு பார்ட்டி',
+      desc: 'A full bottle of whisky plus beers to keep the night going.',
+      desc_ta: 'ஒரு முழு விஸ்கி பாட்டில் + இரவு முழுவதும் பீர்.',
+      items: [['Royal Stag Whiskey', '750ml', 1], ['Kingfisher Strong Beer (New)', '650ml', 6]]
+    },
+    {
+      tag: 'CELEBRATION', tag_ta: 'கொண்டாட்டம்',
+      name: 'Celebration Pack', name_ta: 'கொண்டாட்ட பேக்',
+      desc: 'A 12-year whisky and a bold red — for the big occasions.',
+      desc_ta: '12 வருட விஸ்கி + கனமான ரெட் ஒயின் — பெரிய கொண்டாட்டங்களுக்கு.',
+      items: [['100 Pipers 12 Years Whiskey (new)', '750ml', 1], ['Fratelli Cabernet Franc Shiraz Wine', '750ml', 1]]
+    }
+  ];
+  const inr = n => '₹' + Number(n).toLocaleString('en-IN');
+  const grid = document.getElementById('packGrid');
+  if (!grid) return;
+  const renderPacks = () => {
+    const L = window.__lang();
+    grid.innerHTML = PACKS.map((pk, pi) => {
+      const rows = pk.items.map(([n, p, q]) => {
+        const it = window.__regItem(n, p);
+        if (!it) return '';
+        return `<li><span>${q} × ${it.n} · ${it.p}</span><strong>${inr(q * it.r)}</strong></li>`;
+      }).join('');
+      const total = pk.items.reduce((s, [n, p, q]) => {
+        const it = window.__regItem(n, p); return s + (it ? q * it.r : 0);
+      }, 0);
+      return `<article class="pack-card" data-reveal>
+        <span class="offer-tag">${L === 'ta' && pk.tag_ta ? pk.tag_ta : pk.tag}</span>
+        <h3>${L === 'ta' && pk.name_ta ? pk.name_ta : pk.name}</h3>
+        <p class="pack-desc">${L === 'ta' && pk.desc_ta ? pk.desc_ta : pk.desc}</p>
+        <ul class="pack-items">${rows}</ul>
+        <div class="pack-foot">
+          <p class="pack-total">${t('pack_total')}<strong>${inr(total)}</strong></p>
+          <button class="btn btn-gold btn-sm" data-pack="${pi}">${t('pack_add')}</button>
+        </div>
+      </article>`;
+    }).join('');
+    if (window.__observeReveals) window.__observeReveals();
+  };
+  renderPacks();
+  window.__i18nRefresh.push(renderPacks);
+})();
+
+/* ═══════════════ BOTTLE FINDER QUIZ ═══════════════ */
+(function finder(){
+  const tool = document.getElementById('finderTool');
+  const stepsEl = document.getElementById('finderSteps');
+  const BUDGETS = [
+    { label: 'Under ₹500', lo: 0, hi: 500 },
+    { label: '₹500 – ₹1,500', lo: 500, hi: 1500 },
+    { label: '₹1,500 – ₹3,000', lo: 1500, hi: 3000 },
+    { label: 'Above ₹3,000', lo: 3000, hi: Infinity },
+  ];
+  const TASTES = {
+    'Smooth & mellow': ['Whisky', 'Brandy', 'Wine'],
+    'Strong & bold': ['Whisky', 'Vodka', 'Tequila', 'Rum'],
+    'Light & easy': ['Beer', 'Wine', 'Vodka'],
+    'Sweet & fruity': ['Wine', 'Liqueurs', 'Rum'],
+  };
+  const QUESTIONS = [
+    { key: 'budget', qk: 'f_b_q', opts: BUDGETS.map(b => b.label) },
+    { key: 'occasion', qk: 'f_o_q', opts: ['House party', 'Gift', 'Quiet evening', 'Celebration'] },
+    { key: 'taste', qk: 'f_t_q', opts: Object.keys(TASTES) },
+  ];
+  let step = 0, answers = {};
+  const inr = n => '₹' + Number(n).toLocaleString('en-IN');
+  const answered = () => !!answers[QUESTIONS[step].key];
+  const opt = v => window.__opt(v);
+
+  function recommend(){
+    const b = BUDGETS.find(x => x.label === answers.budget) || BUDGETS[0];
+    const cats = TASTES[answers.taste] || [];
+    const occ = answers.occasion || '';
+    const score = i => {
+      let s = Math.random() * 0.4;
+      if (occ === 'Gift' || occ === 'Celebration') s += (i.r - b.lo) / 20000;
+      if (occ === 'House party' && i.cat === 'Beer') s += 0.7;
+      if (occ === 'Quiet evening' && (i.cat === 'Wine' || i.cat === 'Whisky')) s += 0.4;
+      return s;
+    };
+    let pool = window.__stockItems.filter(i => i.r >= b.lo && i.r < b.hi && cats.includes(i.cat));
+    if (pool.length < 3) pool = pool.concat(
+      window.__stockItems.filter(i => cats.includes(i.cat) && !pool.includes(i))
+        .sort((a, c) => Math.abs(a.r - (b.lo + b.hi) / 2) - Math.abs(c.r - (b.lo + b.hi) / 2)));
+    pool.forEach(i => i._s = score(i));
+    pool.sort((a, c) => c._s - a._s);
+    const seen = new Set(), out = [];
+    for (const i of pool) {
+      if (!seen.has(i.n)) { seen.add(i.n); out.push(i); }
+      if (out.length === 3) break;
+    }
+    return out;
+  }
+
+  function render(){
+    const prog = QUESTIONS.map((_, i) => `<i class="${i < step ? 'done' : ''}"></i>`).join('') +
+      `<i class="${step >= QUESTIONS.length ? 'done' : ''}"></i>`;
+    if (step < QUESTIONS.length) {
+      const q = QUESTIONS[step];
+      stepsEl.innerHTML = `
+        <div class="review-progress">${prog}</div>
+        <p class="review-q">${t(q.qk)}</p>
+        <p class="review-hint">${t('f_hint')}</p>
+        <div class="review-opts">` + q.opts.map(o =>
+          `<button class="review-opt${answers[q.key] === o ? ' sel' : ''}" data-opt="${o}">${window.__opt(o)}</button>`).join('') +
+        `</div>
+        <div class="review-nav">
+          ${step > 0 ? `<button class="review-back" id="fdBack">${t('f_back')}</button>` : '<span></span>'}
+          <button class="btn btn-gold review-next${answered() ? '' : ' disabled'}" id="fdNext">${step === QUESTIONS.length - 1 ? t('f_find') : t('f_next')}</button>
+        </div>`;
+      stepsEl.querySelectorAll('[data-opt]').forEach(b => b.addEventListener('click', () => {
+        answers[q.key] = b.dataset.opt;
+        stepsEl.querySelectorAll('[data-opt]').forEach(x => x.classList.toggle('sel', x === b));
+        document.getElementById('fdNext').classList.remove('disabled');
+      }));
+      const back = document.getElementById('fdBack');
+      if (back) back.addEventListener('click', () => { step--; render(); });
+      document.getElementById('fdNext').addEventListener('click', () => {
+        if (!answered()) return;
+        step++; render();
+      });
+    } else {
+      const recs = recommend();
+      stepsEl.innerHTML = `
+        <div class="review-progress">${prog}</div>
+        <p class="review-result-label">${t('f_result')}</p>
+        <div class="find-results">` + (recs.map(i => `
+          <div class="find-card">
+            <span class="stock-cat">${t('cat_' + i.cat)}</span>
+            <h4>${i.n}</h4>
+            <p class="stock-pack">${i.p}</p>
+            <div class="card-foot">
+              <p class="stock-price">${inr(i.r)}</p>
+              <div class="qty-ctrl" data-qtyctrl="${i.key}">${window.__qtyCtrlHTML(i.key)}</div>
+            </div>
+          </div>`).join('') || `<p class="fineprint">${t('f_nomatch')}</p>`) +
+        `</div>
+        <div class="review-nav" style="margin-top:18px">
+          <button class="review-back" id="fdBack">${t('f_retake')}</button>
+          <button class="btn btn-gold" id="fdDone">${t('f_done')}</button>
+        </div>`;
+      document.getElementById('fdBack').addEventListener('click', () => { step = 0; answers = {}; render(); });
+      document.getElementById('fdDone').addEventListener('click', close);
+    }
+  }
+
+  const open = () => {
+    step = 0; answers = {};
+    render(); tool.classList.add('open'); document.body.style.overflow = 'hidden';
+  };
+  const close = () => { tool.classList.remove('open'); document.body.style.overflow = ''; };
+  document.getElementById('finderBtn').addEventListener('click', open);
+  tool.querySelector('[data-finder-close]').addEventListener('click', close);
+  tool.addEventListener('click', e => { if (e.target === tool) close(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && tool.classList.contains('open')) close(); });
+  window.__i18nRefresh.push(() => { if (tool.classList.contains('open')) render(); });
 })();
