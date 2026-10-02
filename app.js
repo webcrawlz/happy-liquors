@@ -8,7 +8,7 @@ const CONFIG = {
   PHONE_LINK: 'tel:+917373733998',
   HOURS: 'Open all days · 8:00 AM – 11:00 PM',
   INSTAGRAM: 'https://www.instagram.com/happy_liquors',
-  SHOW_PRICES: false                          // ← Abi: set true to show price-list prices publicly
+  SHOW_PRICES: true
 };
 const waLink = (msg) =>
   `https://wa.me/${CONFIG.WHATSAPP_NUMBER}?text=${encodeURIComponent(msg || 'Hi Happy Liquors! I have a question.')}`;
@@ -53,6 +53,118 @@ const waLink = (msg) =>
   if (call) { call.href = CONFIG.PHONE_LINK; call.textContent = 'Call the store · ' + CONFIG.PHONE_DISPLAY; }
   const hours = document.getElementById('hoursText');
   if (hours) hours.textContent = CONFIG.HOURS;
+})();
+
+/* ═══════════════ CART — WhatsApp ordering ═══════════════ */
+(function cart(){
+  const LS_KEY = 'hl_cart_v1', PHONE_KEY = 'hl_cart_phone';
+  const inr = n => '₹' + Number(n).toLocaleString('en-IN');
+
+  // registry: key -> {cat,n,p,r}
+  const REG = {};
+  for (const c of Object.keys(STOCK))
+    for (const it of STOCK[c]) REG[`${c}|${it.n}|${it.p}`] = { cat: c, n: it.n, p: it.p, r: it.r };
+
+  let items = {};
+  try { items = JSON.parse(localStorage.getItem(LS_KEY)) || {}; } catch(e){ items = {}; }
+  Object.keys(items).forEach(k => { if (!REG[k]) delete items[k]; }); // drop stale keys
+
+  const save = () => { try { localStorage.setItem(LS_KEY, JSON.stringify(items)); } catch(e){} };
+  const qtyOf = k => (items[k] && items[k].q) || 0;
+
+  const drawer  = document.getElementById('cartDrawer');
+  const overlay = document.getElementById('cartOverlay');
+  const listEl  = document.getElementById('cartItems');
+  const totalEl = document.getElementById('cartTotal');
+  const countEl = document.getElementById('cartCount');
+  const orderBtn= document.getElementById('orderWa');
+  const phoneEl = document.getElementById('buyerPhone');
+  const clearBtn= document.getElementById('cartClear');
+  try { phoneEl.value = localStorage.getItem(PHONE_KEY) || ''; } catch(e){}
+  phoneEl.addEventListener('input', () => {
+    try { localStorage.setItem(PHONE_KEY, phoneEl.value); } catch(e){}
+    syncOrderLink();
+  });
+
+  const stepperHTML = (k, q) =>
+    `<div class="stepper"><button data-act="dec" data-key="${k}" aria-label="Remove one">−</button><span>${q}</span><button data-act="inc" data-key="${k}" aria-label="Add one">+</button></div>`;
+  window.__qtyCtrlHTML = k => {
+    const q = qtyOf(k);
+    return q ? stepperHTML(k, q) : `<button class="add-btn" data-act="add" data-key="${k}">Add</button>`;
+  };
+  const syncCardCtrls = () =>
+    document.querySelectorAll('[data-qtyctrl]').forEach(el => { el.innerHTML = window.__qtyCtrlHTML(el.dataset.qtyctrl); });
+
+  const totals = () => {
+    let n = 0, amt = 0;
+    for (const k of Object.keys(items)) { n += items[k].q; amt += items[k].q * (REG[k] ? REG[k].r : 0); }
+    return { n, amt };
+  };
+
+  function syncOrderLink(){
+    const keys = Object.keys(items);
+    if (!keys.length) { orderBtn.href = waLink(); orderBtn.classList.add('disabled'); return; }
+    orderBtn.classList.remove('disabled');
+    const lines = keys.map(k => {
+      const it = REG[k], q = items[k].q;
+      return `• ${q} × ${it.n} — ${it.p} — ${inr(q * it.r)}`;
+    });
+    const { n, amt } = totals();
+    let msg = `Hi Happy Liquors! I'd like to place an order:\n\n${lines.join('\n')}\n\nTotal: ${inr(amt)} (${n} item${n > 1 ? 's' : ''})`;
+    const ph = phoneEl.value.trim();
+    if (ph) msg += `\nMy mobile number: ${ph}`;
+    orderBtn.href = `https://wa.me/${CONFIG.WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`;
+  }
+
+  function renderDrawer(){
+    const keys = Object.keys(items);
+    listEl.innerHTML = keys.length ? keys.map(k => {
+      const it = REG[k], q = items[k].q;
+      return `<div class="cart-item">
+        <div class="cart-item-info">
+          <p class="cart-item-name">${it.n}</p>
+          <p class="cart-item-pack">${it.p} · ${inr(it.r)}</p>
+        </div>
+        <div class="cart-item-ctrl">${stepperHTML(k, q)}</div>
+        <p class="cart-item-line">${inr(q * it.r)}</p>
+      </div>`;
+    }).join('') :
+    `<div class="cart-empty">
+       <p class="cart-empty-title">Your cart is empty</p>
+       <p class="fineprint">Browse the Collection and tap Add on anything you like.</p>
+     </div>`;
+    const { n, amt } = totals();
+    totalEl.textContent = inr(amt);
+    countEl.textContent = n;
+    countEl.style.display = n ? '' : 'none';
+    clearBtn.style.display = keys.length ? '' : 'none';
+    syncOrderLink();
+  }
+
+  function mutate(k, d){
+    const q = qtyOf(k) + d;
+    if (q <= 0) delete items[k]; else items[k] = { q };
+    save(); syncCardCtrls(); renderDrawer();
+  }
+  window.HLCart = { add: k => mutate(k, 1), clear: () => { items = {}; save(); syncCardCtrls(); renderDrawer(); } };
+
+  document.addEventListener('click', e => {
+    const b = e.target.closest('[data-act]');
+    if (!b || !REG[b.dataset.key]) return;
+    const k = b.dataset.key, act = b.dataset.act;
+    if (act === 'add' || act === 'inc') mutate(k, 1);
+    else if (act === 'dec') mutate(k, -1);
+  });
+
+  const open  = () => { renderDrawer(); drawer.classList.add('open'); overlay.classList.add('show'); document.body.style.overflow = 'hidden'; };
+  const close = () => { drawer.classList.remove('open'); overlay.classList.remove('show'); document.body.style.overflow = ''; };
+  document.getElementById('cartBtn').addEventListener('click', open);
+  document.getElementById('cartClose').addEventListener('click', close);
+  overlay.addEventListener('click', close);
+  clearBtn.addEventListener('click', () => window.HLCart.clear());
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') close(); });
+
+  renderDrawer();
 })();
 
 /* ═══════════════ THREE.JS HERO — the Vault bottle ═══════════════ */
@@ -279,13 +391,19 @@ if (sessionStorage.getItem('hl_age_ok') === '1') heroIntro();
     const total = list.length;
     const slice = list.slice(0, shown);
     count.textContent = `Showing ${slice.length} of ${total} labels${query ? ` for \u201c${search.value.trim()}\u201d` : ''}`;
-    grid.innerHTML = slice.map(i => `
+    grid.innerHTML = slice.map(i => {
+      const key = `${i.cat}|${i.n}|${i.p}`;
+      return `
       <div class="stock-card" data-tilt>
         <span class="stock-cat">${i.cat}</span>
         <h4 class="stock-name">${i.n}</h4>
         <p class="stock-pack">${i.p || ''}</p>
-        ${CONFIG.SHOW_PRICES && i.r ? `<p class="stock-price">\u20B9${i.r}</p>` : ''}
-      </div>`).join('') || `<p class="fineprint">Nothing found — try another brand or spirit.</p>`;
+        <div class="card-foot">
+          ${CONFIG.SHOW_PRICES && i.r ? `<p class="stock-price">₹${Number(i.r).toLocaleString('en-IN')}</p>` : '<span></span>'}
+          <div class="qty-ctrl" data-qtyctrl="${key}">${window.__qtyCtrlHTML ? window.__qtyCtrlHTML(key) : ''}</div>
+        </div>
+      </div>`;
+    }).join('') || `<p class="fineprint">Nothing found — try another brand or spirit.</p>`;
     more.style.display = shown < total ? '' : 'none';
     bindTilt(grid);
     if (window.ScrollTrigger) ScrollTrigger.refresh();
